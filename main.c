@@ -7,7 +7,7 @@
 #include <string.h>
 #include <errno.h>
 
-void	get_addres(char **envp, char ** argv)
+void	get_addres(char **envp, char **argv)
 {
 	char *addres;
 	char **tmp;
@@ -16,7 +16,13 @@ void	get_addres(char **envp, char ** argv)
 		i++;
 	tmp = ft_split(envp[i] + 5, ':');
 	i = 0;
-	while (tmp[i])
+	while (tmp[i]){
+		char *tmp_addres;
+		tmp_addres = ft_strjoin(tmp[i++], "/");
+		tmp_addres = ft_strjoin(tmp_addres, argv[]);
+
+		printf("%s\n", tmp_addres);
+	}
 		
 	
 }
@@ -28,7 +34,7 @@ void	call_cmd1_process(int *fd, char **argv, char **envp)
 		// if (access(argv[1], O_RDONLY) == -1)
 		// {
 		// 	perror(argv[1]);
-		// 	exit (1);
+		// 	exit (1);:
 		// }
 		// else
 		// {
