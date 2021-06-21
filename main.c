@@ -4,10 +4,11 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include "./libft/libft.h"
-#include <string.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <errno.h>
 
-void	get_addres(char **envp, char **argv)
+char	*get_addres(char **envp, char **argv)
 {
 	char *addres;
 	char **tmp;
@@ -15,41 +16,43 @@ void	get_addres(char **envp, char **argv)
 	while (ft_strncmp(envp[i], "PATH=", 5))
 		i++;
 	tmp = ft_split(envp[i] + 5, ':');
+	char **comand = ft_split(argv[2], ' ');
 	i = 0;
 	while (tmp[i]){
 		char *tmp_addres;
-		tmp_addres = ft_strjoin(tmp[i++], "/");
-		tmp_addres = ft_strjoin(tmp_addres, argv[]);
-
+		tmp_addres = ft_strjoin(tmp[i], "/");
+		tmp_addres = ft_strjoin(tmp_addres, comand[0]);
+		printf("%d ", access(tmp_addres, F_OK));
 		printf("%s\n", tmp_addres);
+		if (access(tmp_addres, F_OK) == 0)
+			return tmp_addres;
+		i++;
 	}
 		
 	
 }
 void	call_cmd1_process(int *fd, char **argv, char **envp)
 {
-		get_addres(envp, argv);
-		// int fd_input_file;
-		// char result[100] = "/usr/bin/"; // разобраться как проверять доступ
-		// if (access(argv[1], O_RDONLY) == -1)
-		// {
-		// 	perror(argv[1]);
-		// 	exit (1);:
-		// }
-		// else
-		// {
-		// 	fd_input_file = open(argv[1], O_RDONLY);
-		// }
- 		// dup2(fd_input_file, STDIN_FILENO); 
-		// dup2(fd[1], STDOUT_FILENO);
-		// close(fd[1]);
-		// close(fd[0]);
-		// char **cmd1 = ft_split(argv[2], ' ');
-		// strcat(result, cmd1[0]); // заменить на либовскую функцию
-		// if (execve(result, cmd1, envp)  < 0) // проверить на ошибку
-		// {
-		// 	perror("CMD1 fail");
-		// }
+	char *name_program = get_addres(envp, argv);
+	int fd_input_file;
+	if (access(argv[1], O_RDONLY) == -1)
+	{
+		perror(argv[1]);
+		exit (1);
+	}
+	else
+	{
+		fd_input_file = open(argv[1], O_RDONLY);
+	}
+	dup2(fd_input_file, STDIN_FILENO); 
+	dup2(fd[1], STDOUT_FILENO);
+	close(fd[1]);
+	close(fd[0]);
+	char **cmd1 = ft_split(argv[2], ' ');
+	if (execve(name_program, cmd1, envp)  < 0) // проверить на ошибку
+	{
+		perror("CMD1 fail");
+	}
 }
 
 void	call_cmd2_process(int *fd, char **argv, char **envp)
@@ -69,7 +72,7 @@ void	call_cmd2_process(int *fd, char **argv, char **envp)
 int	main(int argc, char **argv, char **envp)
 {
 	int	fd[2];
-	int	pid1;
+	pid_t	pid1;
 	int	pid2;
 
 	if (pipe(fd) < 0)
@@ -77,16 +80,15 @@ int	main(int argc, char **argv, char **envp)
 	pid1 = fork();
 	if (pid1 < 0)
 		return (2);
-
 	if (pid1 == 0) //cmd1 process
 		call_cmd1_process(fd, argv, envp);
-	// pid2 = fork();
-	// if (pid2 < 0)
-	// 	return (3);
-	// if(pid2 == 0) // cmd2 process
-	// 	call_cmd2_process(fd, argv, envp);
-	// close(fd[1]);
-	// close(fd[0]);
-	// wait(NULL);
+	pid2 = fork();
+	if (pid2 < 0)
+		return (3);
+	if(pid2 == 0) // cmd2 process
+		call_cmd2_process(fd, argv, envp);
+	close(fd[1]);
+	close(fd[0]);
+	return (123);
 }
 
