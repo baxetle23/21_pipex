@@ -15,7 +15,7 @@ INCLUDES		=
 
 $(NAME):		$(OBJS) $(HEADER)
 				$(MAKE) -C ./libft
-				gcc $(OBJS) ./libft/libft.a -o ${NAME}
+				gcc -g $(OBJS) ./libft/libft.a -o ${NAME}
 
 all:			$(NAME)
 clean:

@@ -22,7 +22,6 @@ char	*ft_strjoin(const char *s1, const char *s2)
 		i++;
 		j++;
 	}
-	//free(s1);
 	new_string[i] = '\0';
 	return (new_string);
 }

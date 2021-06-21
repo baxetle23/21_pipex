@@ -8,37 +8,59 @@
 #include <sys/wait.h>
 #include <errno.h>
 
+void	free_memory(char** split1, char **split2)
+{
+	int i;
+
+	i = 0;
+	while (split1[i])
+		free(split1[i++]);
+	i = 0;
+	while(split2[i])
+		free(split2[i++]);
+	free(split2);
+	free(split1);
+}
 
 char	*get_addres(char **envp, char *cmd_string)
 {
-	// разобраться с маллоком и сдлеать функцию универсальной
-
 	char *addres;
-	char **tmp;
-	int	i = 0;
+	char *addres_full;
+	char **strings_way;
+	char **comand;
+	int	i;
+
+	i = 0;
 	while (ft_strncmp(envp[i], "PATH=", 5))
 		i++;
-	tmp = ft_split(envp[i] + 5, ':');
-	char **comand = ft_split(cmd_string, ' ');
+	strings_way = ft_split(envp[i] + 5, ':');
+	comand = ft_split(cmd_string, ' ');
 	i = 0;
-	while (tmp[i]){
-		char *tmp_addres;
-		tmp_addres = ft_strjoin(tmp[i], "/");
-		tmp_addres = ft_strjoin(tmp_addres, comand[0]);
-		if (access(tmp_addres, F_OK) == 0)
-			return tmp_addres;
+	while (strings_way[i])
+	{
+		addres = ft_strjoin(strings_way[i], "/");
+		addres_full = ft_strjoin(addres, comand[0]);
+		free(addres);
+		if (access(addres_full, F_OK) == 0)
+		{
+			free_memory(strings_way, comand);
+			return addres_full;
+		}
+		free(addres_full);
 		i++;
 	}
 	ft_putstr_fd(comand[0], 2);
 	ft_putstr_fd(": command not found\n", 2);
+	free_memory(strings_way, comand);
 	exit (5);
-		
-	
 }
+
 void	call_cmd1_process(int *fd, char **argv, char **envp)
 {
-	char *name_program = get_addres(envp, argv[2]);
+	char *name_program;
 	int fd_input_file;
+	char **cmd1;
+
 	if (access(argv[1], O_RDONLY) == -1)
 	{
 		perror(argv[1]);
@@ -52,18 +74,18 @@ void	call_cmd1_process(int *fd, char **argv, char **envp)
 	dup2(fd[1], STDOUT_FILENO);
 	close(fd[1]);
 	close(fd[0]);
-	char **cmd1 = ft_split(argv[2], ' ');
-	if (execve(name_program, cmd1, envp)  < 0) // проверить на ошибку
-	{
-		perror("CMD1 fail");
-	}
+	cmd1 = ft_split(argv[2], ' ');
+	name_program = get_addres(envp, argv[2]);
+	execve(name_program, cmd1, envp);
 }
 
 void	call_cmd2_process(int *fd, char **argv, char **envp)
 {
-	char *name_program = get_addres(envp, argv[3]);	
-	int fd_output_file;
+	char *name_program; 	
+	int  fd_output_file;
 	char *file_name;
+	char **cmd2;
+
 	file_name = ft_strjoin("./", argv[4]);
 	if (!access(file_name, O_RDWR | O_CREAT))
 	{
@@ -72,15 +94,16 @@ void	call_cmd2_process(int *fd, char **argv, char **envp)
 	}
 	else
 	{
-		fd_output_file = open(file_name, O_RDWR | O_CREAT);
+		fd_output_file = open(file_name, O_RDWR | O_CREAT | O_TRUNC, 0664);
+		free(file_name);
 	}	
 	dup2(fd_output_file, STDOUT_FILENO);
 	dup2(fd[0], STDIN_FILENO);
 	close(fd[1]);
 	close(fd[0]);
-	char **cmd2 = ft_split(argv[3], ' ');
-	if (execve(name_program, cmd2, NULL) < 0)
-		perror("");
+	cmd2 = ft_split(argv[3], ' ');
+	name_program = get_addres(envp, argv[3]);
+	execve(name_program, cmd2, NULL);
 }
 
 int	main(int argc, char **argv, char **envp)
@@ -114,6 +137,5 @@ int	main(int argc, char **argv, char **envp)
 		ft_putstr_fd("Please use: ./pipex infile cmd1 cmd2 outfile\n", 2);
 		return (4);
 	}
-
 }
 
