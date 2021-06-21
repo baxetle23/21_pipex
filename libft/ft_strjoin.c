@@ -1,6 +1,6 @@
 #include "libft.h"
 
-char	*ft_strjoin(char *s1, char *s2)
+char	*ft_strjoin(const char *s1, const char *s2)
 {
 	char	*new_string;
 	size_t	i;
@@ -22,7 +22,7 @@ char	*ft_strjoin(char *s1, char *s2)
 		i++;
 		j++;
 	}
-	free(s1);
+	//free(s1);
 	new_string[i] = '\0';
 	return (new_string);
 }

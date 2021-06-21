@@ -12,7 +12,7 @@
 char	*get_addres(char **envp, char **argv)
 {
 	// разобраться с маллоком и сдлеать функцию универсальной
-	
+
 	char *addres;
 	char **tmp;
 	int	i = 0;
@@ -62,7 +62,19 @@ void	call_cmd1_process(int *fd, char **argv, char **envp)
 void	call_cmd2_process(int *fd, char **argv, char **envp)
 {
 	char result[100] = "/usr/bin/";
-	int fd_output_file = open(argv[4], O_WRONLY);
+	int fd_output_file;
+	char *file_name;
+	file_name = ft_strjoin("./", argv[4]);
+	if (!access(file_name, O_RDWR | O_CREAT))
+	{
+		perror(argv[4]);
+		exit (1);
+	}
+	else
+	{
+		fd_output_file = open(file_name, O_RDWR | O_CREAT);
+	}
+	printf("%d - fd open\n", fd_output_file);
 	dup2(fd_output_file, STDOUT_FILENO);
 	dup2(fd[0], STDIN_FILENO);
 	close(fd[1]);
@@ -76,23 +88,33 @@ void	call_cmd2_process(int *fd, char **argv, char **envp)
 int	main(int argc, char **argv, char **envp)
 {
 	int	fd[2];
-	pid_t	pid1;
+	int	pid1;
 	int	pid2;
 
-	if (pipe(fd) < 0)
-		return (1);
-	pid1 = fork();
-	if (pid1 < 0)
-		return (2);
-	if (pid1 == 0) //cmd1 process
-		call_cmd1_process(fd, argv, envp);
-	pid2 = fork();
-	if (pid2 < 0)
-		return (3);
-	if(pid2 == 0) // cmd2 process
-		call_cmd2_process(fd, argv, envp);
-	close(fd[1]);
-	close(fd[0]);
-	return (123);
+	if (argc == 5) 
+	{
+		if (pipe(fd) < 0)
+			return (1);
+		pid1 = fork();
+		if (pid1 < 0)
+			return (2);
+		if (pid1 == 0) //cmd1 process
+			call_cmd1_process(fd, argv, envp);
+		wait(NULL);
+		pid2 = fork();
+		if (pid2 < 0)
+			return (3);
+		if(pid2 == 0) // cmd2 process
+			call_cmd2_process(fd, argv, envp);
+		close(fd[1]);
+		close(fd[0]);
+		wait(NULL);
+		return (0);
+	}
+	else
+	{
+		ft_putstr_fd("Please use: ./pipex infile cmd1 cmd2 outfile\n", 2);
+	}
+
 }
 
