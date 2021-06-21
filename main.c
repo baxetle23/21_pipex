@@ -9,7 +9,7 @@
 #include <errno.h>
 
 
-char	*get_addres(char **envp, char **argv)
+char	*get_addres(char **envp, char *cmd_string)
 {
 	// разобраться с маллоком и сдлеать функцию универсальной
 
@@ -19,25 +19,25 @@ char	*get_addres(char **envp, char **argv)
 	while (ft_strncmp(envp[i], "PATH=", 5))
 		i++;
 	tmp = ft_split(envp[i] + 5, ':');
-	char **comand = ft_split(argv[2], ' ');
+	char **comand = ft_split(cmd_string, ' ');
 	i = 0;
 	while (tmp[i]){
 		char *tmp_addres;
 		tmp_addres = ft_strjoin(tmp[i], "/");
 		tmp_addres = ft_strjoin(tmp_addres, comand[0]);
-		printf("%d ", access(tmp_addres, F_OK));
-		printf("%s\n", tmp_addres);
-		// добавить условие если не нашли команду
 		if (access(tmp_addres, F_OK) == 0)
 			return tmp_addres;
 		i++;
 	}
+	ft_putstr_fd(comand[0], 2);
+	ft_putstr_fd(": command not found\n", 2);
+	exit (5);
 		
 	
 }
 void	call_cmd1_process(int *fd, char **argv, char **envp)
 {
-	char *name_program = get_addres(envp, argv);
+	char *name_program = get_addres(envp, argv[2]);
 	int fd_input_file;
 	if (access(argv[1], O_RDONLY) == -1)
 	{
@@ -61,7 +61,7 @@ void	call_cmd1_process(int *fd, char **argv, char **envp)
 
 void	call_cmd2_process(int *fd, char **argv, char **envp)
 {
-	char result[100] = "/usr/bin/";
+	char *name_program = get_addres(envp, argv[3]);	
 	int fd_output_file;
 	char *file_name;
 	file_name = ft_strjoin("./", argv[4]);
@@ -73,16 +73,14 @@ void	call_cmd2_process(int *fd, char **argv, char **envp)
 	else
 	{
 		fd_output_file = open(file_name, O_RDWR | O_CREAT);
-	}
-	printf("%d - fd open\n", fd_output_file);
+	}	
 	dup2(fd_output_file, STDOUT_FILENO);
 	dup2(fd[0], STDIN_FILENO);
 	close(fd[1]);
 	close(fd[0]);
 	char **cmd2 = ft_split(argv[3], ' ');
-	strcat(result, cmd2[0]);
-	if (execve(result, cmd2, NULL) < 0)
-		printf("cmd2 fail\n");
+	if (execve(name_program, cmd2, NULL) < 0)
+		perror("");
 }
 
 int	main(int argc, char **argv, char **envp)
@@ -114,6 +112,7 @@ int	main(int argc, char **argv, char **envp)
 	else
 	{
 		ft_putstr_fd("Please use: ./pipex infile cmd1 cmd2 outfile\n", 2);
+		return (4);
 	}
 
 }
