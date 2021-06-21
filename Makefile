@@ -1,16 +1,16 @@
 
 NAME 			=	pipex
 
-HEADER			=	
+HEADER			=	./pipex.h
 
-SRCS			=	main.c 
+SRCS			=	main.c utils.c
 
 OBJS			= $(SRCS:.c=.o)
 %.o:			%.c ${HEADER}
 				$(CC) $(CFLAGS) -c -o $@ $<
 
 RM				= rm -f
-CFLAGS			= #-Wall -Werror -Wextra
+CFLAGS			= -Wall -Werror -Wextra
 INCLUDES		= 
 
 $(NAME):		$(OBJS) $(HEADER)

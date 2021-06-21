@@ -15,7 +15,7 @@ HEDER	=	libft.h
 
 OBJS	=	$(patsubst %.c, %.o, $(SRCS))
 
-FLAGS	=	#-Wall -Wextra -Werror
+FLAGS	=	-Wall -Wextra -Werror
 
 all		:	${NAME}
 
