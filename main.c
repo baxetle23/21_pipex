@@ -8,8 +8,11 @@
 #include <sys/wait.h>
 #include <errno.h>
 
+
 char	*get_addres(char **envp, char **argv)
 {
+	// разобраться с маллоком и сдлеать функцию универсальной
+	
 	char *addres;
 	char **tmp;
 	int	i = 0;
@@ -24,6 +27,7 @@ char	*get_addres(char **envp, char **argv)
 		tmp_addres = ft_strjoin(tmp_addres, comand[0]);
 		printf("%d ", access(tmp_addres, F_OK));
 		printf("%s\n", tmp_addres);
+		// добавить условие если не нашли команду
 		if (access(tmp_addres, F_OK) == 0)
 			return tmp_addres;
 		i++;
